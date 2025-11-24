@@ -1,0 +1,370 @@
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Camera, Save } from 'lucide-react';
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api';
+
+interface ProfileEditorProps {
+  user: any;
+}
+
+export default function ProfileEditor({ user }: ProfileEditorProps) {
+  const queryClient = useQueryClient();
+  
+  const [formData, setFormData] = useState({
+    username: user.username,
+    email: user.email,
+    profile: {
+      bio: user.profile?.bio || '',
+      country: user.profile?.country || '',
+      pronouns: user.profile?.pronouns || '',
+      favoriteHunter: user.profile?.favoriteHunter || '',
+      socials: {
+        twitter: user.profile?.socials?.twitter || '',
+        discord: user.profile?.socials?.discord || '',
+        twitch: user.profile?.socials?.twitch || '',
+        youtube: user.profile?.socials?.youtube || '',
+      }
+    },
+    preferences: {
+      theme: user.preferences?.theme || 'dark',
+      language: user.preferences?.language || 'en',
+      notifications: {
+        email: user.preferences?.notifications?.email ?? true,
+        teamInvites: user.preferences?.notifications?.teamInvites ?? true,
+        tournamentUpdates: user.preferences?.notifications?.tournamentUpdates ?? true,
+      }
+    }
+  });
+  
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_URL}/profile`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      alert('Profile updated successfully!');
+    }
+  });
+
+  const uploadAvatarMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/profile/avatar`, { avatarUrl: url }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setAvatarUrl('');
+      alert('Avatar updated!');
+    }
+  });
+
+  const uploadBannerMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/profile/banner`, { bannerUrl: url }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      setBannerUrl('');
+      alert('Banner updated!');
+    }
+  });
+
+  const handleInputChange = (field: string, value: any) => {
+    const keys = field.split('.');
+    setFormData(prev => {
+      const newData = { ...prev };
+      let current: any = newData;
+      
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
+      }
+      
+      current[keys[keys.length - 1]] = value;
+      return newData;
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProfileMutation.mutate(formData);
+  };
+
+  const handleAvatarUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (avatarUrl.trim()) {
+      uploadAvatarMutation.mutate(avatarUrl);
+    }
+  };
+
+  const handleBannerUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bannerUrl.trim()) {
+      uploadBannerMutation.mutate(bannerUrl);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Banner */}
+      <div className="card-game overflow-hidden">
+        <div 
+          className="h-48 bg-gradient-to-r from-primary/20 to-accent/20 relative"
+          style={user.profile?.banner ? { backgroundImage: `url(${user.profile.banner})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+        >
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <Camera className="w-8 h-8 text-white/60" />
+          </div>
+        </div>
+        
+        <div className="p-6 -mt-16">
+          <div 
+            className="w-32 h-32 rounded-full bg-background border-4 border-primary/50 relative overflow-hidden"
+            style={user.profile?.avatar ? { backgroundImage: `url(${user.profile.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+          >
+            {!user.profile?.avatar && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                <Camera className="w-8 h-8 text-gray-400" />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Upload URLs */}
+        <div className="px-6 pb-6 space-y-4">
+          <form onSubmit={handleAvatarUpload} className="flex gap-2">
+            <input
+              type="url"
+              placeholder="Avatar URL"
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              className="input-game flex-1"
+            />
+            <button type="submit" className="btn-secondary px-4">Upload Avatar</button>
+          </form>
+          
+          <form onSubmit={handleBannerUpload} className="flex gap-2">
+            <input
+              type="url"
+              placeholder="Banner URL"
+              value={bannerUrl}
+              onChange={(e) => setBannerUrl(e.target.value)}
+              className="input-game flex-1"
+            />
+            <button type="submit" className="btn-secondary px-4">Upload Banner</button>
+          </form>
+        </div>
+      </div>
+
+      {/* Profile Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Info */}
+        <div className="card-game p-6 space-y-4">
+          <h3 className="text-xl font-bold text-gradient-primary">Basic Information</h3>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Username</label>
+            <input
+              type="text"
+              value={formData.username}
+              onChange={(e) => handleInputChange('username', e.target.value)}
+              className="input-game w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className="input-game w-full"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Bio</label>
+            <textarea
+              value={formData.profile.bio}
+              onChange={(e) => handleInputChange('profile.bio', e.target.value)}
+              className="input-game w-full"
+              rows={4}
+              maxLength={500}
+            />
+            <p className="text-xs text-gray-400 mt-1">{formData.profile.bio.length}/500</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Country</label>
+              <input
+                type="text"
+                value={formData.profile.country}
+                onChange={(e) => handleInputChange('profile.country', e.target.value)}
+                className="input-game w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Pronouns</label>
+              <input
+                type="text"
+                value={formData.profile.pronouns}
+                onChange={(e) => handleInputChange('profile.pronouns', e.target.value)}
+                placeholder="e.g. he/him, she/her"
+                className="input-game w-full"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Favorite Hunter</label>
+            <input
+              type="text"
+              value={formData.profile.favoriteHunter}
+              onChange={(e) => handleInputChange('profile.favoriteHunter', e.target.value)}
+              className="input-game w-full"
+            />
+          </div>
+        </div>
+
+        {/* Socials */}
+        <div className="card-game p-6 space-y-4">
+          <h3 className="text-xl font-bold text-gradient-primary">Social Links</h3>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Twitter</label>
+              <input
+                type="text"
+                value={formData.profile.socials.twitter}
+                onChange={(e) => handleInputChange('profile.socials.twitter', e.target.value)}
+                placeholder="@username"
+                className="input-game w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Discord</label>
+              <input
+                type="text"
+                value={formData.profile.socials.discord}
+                onChange={(e) => handleInputChange('profile.socials.discord', e.target.value)}
+                placeholder="username#1234"
+                className="input-game w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Twitch</label>
+              <input
+                type="text"
+                value={formData.profile.socials.twitch}
+                onChange={(e) => handleInputChange('profile.socials.twitch', e.target.value)}
+                placeholder="username"
+                className="input-game w-full"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">YouTube</label>
+              <input
+                type="text"
+                value={formData.profile.socials.youtube}
+                onChange={(e) => handleInputChange('profile.socials.youtube', e.target.value)}
+                placeholder="channel"
+                className="input-game w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences */}
+        <div className="card-game p-6 space-y-4">
+          <h3 className="text-xl font-bold text-gradient-primary">Preferences</h3>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Theme</label>
+              <select
+                value={formData.preferences.theme}
+                onChange={(e) => handleInputChange('preferences.theme', e.target.value)}
+                className="input-game w-full"
+              >
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Language</label>
+              <select
+                value={formData.preferences.language}
+                onChange={(e) => handleInputChange('preferences.language', e.target.value)}
+                className="input-game w-full"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="block text-sm font-medium mb-2">Notifications</label>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.preferences.notifications.email}
+                onChange={(e) => handleInputChange('preferences.notifications.email', e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span>Email Notifications</span>
+            </label>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.preferences.notifications.teamInvites}
+                onChange={(e) => handleInputChange('preferences.notifications.teamInvites', e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span>Team Invites</span>
+            </label>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.preferences.notifications.tournamentUpdates}
+                onChange={(e) => handleInputChange('preferences.notifications.tournamentUpdates', e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span>Tournament Updates</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+          <Save className="w-5 h-5" />
+          Save Profile
+        </button>
+      </form>
+    </div>
+  );
+}
