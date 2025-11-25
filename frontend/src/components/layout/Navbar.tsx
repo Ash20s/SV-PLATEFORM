@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useI18n } from '@/i18n/i18n';
-import { Trophy, Users, Swords, BarChart3, Briefcase, CalendarPlus, ShieldCheck, LogIn, MessageSquare } from 'lucide-react';
+import { Trophy, Users, Swords, BarChart3, Briefcase, Calendar, CalendarPlus, ShieldCheck, LogIn, MessageSquare } from 'lucide-react';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 
 export default function Navbar() {
@@ -18,32 +18,27 @@ export default function Navbar() {
             SUPERVIVE
           </Link>
 
-          <div className="flex items-center gap-6">
-            <Link to="/teams" className="flex items-center gap-2 hover:text-primary">
-              <Users size={18} />
-              <span>{t('nav.teams')}</span>
+          <div className="flex items-center gap-8">
+            <Link to="/" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              HOME
             </Link>
-            <Link to="/scrims" className="flex items-center gap-2 hover:text-primary">
-              <Swords size={18} />
-              <span>{t('nav.scrims')}</span>
+            <Link to="/scrims" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              SCRIMS
             </Link>
-            <Link to="/tournaments" className="flex items-center gap-2 hover:text-primary">
-              <Trophy size={18} />
-              <span>{t('nav.tournaments')}</span>
+            <Link to="/tournaments" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              TOURNAMENTS
             </Link>
-            {!isAuthenticated && (
-              <Link to="/stats" className="flex items-center gap-2 hover:text-primary">
-                <BarChart3 size={18} />
-                <span>{t('nav.stats')}</span>
-              </Link>
-            )}
-            <Link to="/mercato" className="flex items-center gap-2 hover:text-primary">
-              <Briefcase size={18} />
-              <span>{t('nav.mercato')}</span>
+            <Link to="/leaderboard" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              LEADERBOARD
             </Link>
-            <Link to="/community" className="flex items-center gap-2 hover:text-primary">
-              <MessageSquare size={18} />
-              <span>{t('nav.community')}</span>
+            <Link to="/teams" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              TEAMS
+            </Link>
+            <Link to="/mercato" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              RECRUITMENT
+            </Link>
+            <Link to="/calendar" className="text-sm font-semibold hover:text-primary transition-colors uppercase tracking-wide">
+              CALENDAR
             </Link>
             
             {isOrganizer && (
@@ -67,10 +62,9 @@ export default function Navbar() {
               ) : (
                 <Link 
                   to="/login" 
-                  className="flex items-center gap-2 hover:bg-primary/90 bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg"
+                  className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2 rounded-lg font-bold transition-all uppercase tracking-wide text-sm"
                 >
-                  <LogIn size={18} />
-                  <span>{t('nav.login')}</span>
+                  LOGIN
                 </Link>
               )}
             </div>

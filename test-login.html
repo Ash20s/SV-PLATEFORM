@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - Supervive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0E0B16;
+            color: white;
+        }
+        .container {
+            background: #1A142E;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #FF006E;
+        }
+        h1 { color: #FF006E; text-align: center; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #0E0B16;
+            border: 1px solid #FF006E;
+            border-radius: 5px;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #FF006E;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover { background: #cc0058; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #10b981;
+            display: block;
+        }
+        .error {
+            background: #ef4444;
+            display: block;
+        }
+        .info {
+            background: #3b82f6;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test de Connexion</h1>
+        
+        <div class="info">
+            <strong>Compte Admin par défaut :</strong><br>
+            Email: admin@supervive.gg<br>
+            Password: admin123
+        </div>
+
+        <form id="loginForm">
+            <input type="email" id="email" placeholder="Email" value="admin@supervive.gg" required>
+            <input type="password" id="password" placeholder="Mot de passe" value="admin123" required>
+            <button type="submit">Se connecter</button>
+        </form>
+
+        <div id="result" class="result"></div>
+
+        <div id="debug" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            const debugDiv = document.getElementById('debug');
+
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'result';
+            debugDiv.innerHTML = '<p>⏳ Connexion en cours...</p>';
+
+            try {
+                console.log('Tentative de connexion avec:', { email, password: '***' });
+                
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                console.log('Réponse reçue:', response.status);
+                const data = await response.json();
+                console.log('Données:', data);
+
+                if (response.ok && data.token) {
+                    // Stockage du token
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('auth_user', JSON.stringify(data.user));
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Connexion réussie !</h3>
+                        <p><strong>Username:</strong> ${data.user.username}</p>
+                        <p><strong>Email:</strong> ${data.user.email}</p>
+                        <p><strong>Rôle:</strong> ${data.user.role}</p>
+                        <p style="margin-top: 15px;">
+                            <a href="http://localhost:5173" style="color: white; text-decoration: underline;">
+                                👉 Cliquez ici pour aller sur le site
+                            </a>
+                        </p>
+                    `;
+                    
+                    debugDiv.innerHTML = `
+                        <div class="info">
+                            <strong>Token stocké:</strong>
+                            <pre>${data.token.substring(0, 50)}...</pre>
+                            <strong>Données utilisateur:</strong>
+                            <pre>${JSON.stringify(data.user, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>${data.message || 'Identifiants invalides'}</p>
+                    `;
+                    
+                    debugDiv.innerHTML = `
+                        <div class="error">
+                            <strong>Réponse serveur:</strong>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Erreur de connexion</h3>
+                    <p>${error.message}</p>
+                    <p>Vérifiez que le backend est lancé sur ${API_URL}</p>
+                `;
+                resultDiv.style.display = 'block';
+                
+                debugDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Erreur technique:</strong>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        });
+
+        // Vérifier si déjà connecté
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('auth_user');
+            
+            if (token && user) {
+                const debugDiv = document.getElementById('debug');
+                debugDiv.innerHTML = `
+                    <div class="info">
+                        <strong>⚠️ Déjà connecté:</strong>
+                        <pre>${JSON.parse(user).username} (${JSON.parse(user).role})</pre>
+                        <button onclick="localStorage.clear(); location.reload();" style="margin-top: 10px;">
+                            Se déconnecter
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -33,6 +33,43 @@ const teamSchema = new Schema({
     tournamentsPlayed: { type: Number, default: 0 },
     tournamentsWon: { type: Number, default: 0 },
   },
+
+  // Système MMR (Match Making Rating)
+  mmr: {
+    value: { type: Number, default: 1200 }, // MMR actuel
+    tier: { 
+      type: String, 
+      enum: ['ELITE', 'T1', 'T2H', 'T2', 'T3'], 
+      default: 'T3' 
+    },
+    peak: { type: Number, default: 1200 }, // MMR le plus élevé
+    history: [{
+      mmr: Number,
+      change: Number,
+      placement: Number, // 1-10 (squads) or 1-12 (trios)
+      totalTeams: Number, // 10 (squads) or 12 (trios)
+      matchType: { type: String, enum: ['Scrim', 'Tournament'] }, // Type de match
+      match: { type: Schema.Types.ObjectId, ref: 'Scrim' },
+      date: { type: Date, default: Date.now }
+    }],
+    recentForm: [{ 
+      type: String, 
+      enum: ['W', 'L', 'D'] 
+    }], // 10 derniers résultats
+    lastUpdated: { type: Date, default: Date.now },
+    gamesPlayed: { type: Number, default: 0 },
+    isCalibrating: { type: Boolean, default: true }, // Placement matches
+    calibrationGames: { type: Number, default: 0 } // 0-10
+  },
+
+  // Format préféré
+  format: {
+    type: String,
+    enum: ['SQUADS', 'TRIOS', 'BOTH'],
+    default: 'BOTH'
+  },
+
+  lastMatchDate: { type: Date }, // Pour filtres period
   
   socials: {
     twitter: String,

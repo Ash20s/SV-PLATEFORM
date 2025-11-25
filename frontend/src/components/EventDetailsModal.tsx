@@ -121,7 +121,9 @@ export default function EventDetailsModal({ event, onClose }: EventDetailsModalP
                     {(base as any).prizePool && (
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">{t('tournament.details.prize.pool')}</span>
-                        <span className="font-semibold text-primary">€{(base as any).prizePool.toLocaleString()}</span>
+                        <span className="bg-[#FFBE0B] text-black px-3 py-1 rounded font-bold text-sm">
+                          ${(base as any).prizePool.toLocaleString()}
+                        </span>
                       </div>
                     )}
                   </>

@@ -1,0 +1,71 @@
+{
+  "tournament_banners": [
+    {
+      "name": "Epic Battle",
+      "url": "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&h=1080&fit=crop",
+      "type": "action",
+      "tier": "T1"
+    },
+    {
+      "name": "Team Strategy",
+      "url": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1920&h=1080&fit=crop",
+      "type": "team",
+      "tier": "T2"
+    },
+    {
+      "name": "Championship Arena",
+      "url": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1920&h=1080&fit=crop",
+      "type": "arena",
+      "tier": "T1"
+    },
+    {
+      "name": "Competitive Gaming",
+      "url": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=1920&h=1080&fit=crop",
+      "type": "competitive",
+      "tier": "Both"
+    },
+    {
+      "name": "Esports Event",
+      "url": "https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=1920&h=1080&fit=crop",
+      "type": "event",
+      "tier": "T1"
+    },
+    {
+      "name": "Gaming Setup",
+      "url": "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=1920&h=1080&fit=crop",
+      "type": "setup",
+      "tier": "T2"
+    }
+  ],
+  "scrim_banners": [
+    {
+      "name": "Practice Session",
+      "url": "https://images.unsplash.com/photo-1556438064-2d7646166914?w=1920&h=1080&fit=crop",
+      "type": "practice"
+    },
+    {
+      "name": "Team Training",
+      "url": "https://images.unsplash.com/photo-1616499452865-67f6d1b06dd7?w=1920&h=1080&fit=crop",
+      "type": "training"
+    },
+    {
+      "name": "Gaming Night",
+      "url": "https://images.unsplash.com/photo-1542751110-97427bbecf20?w=1920&h=1080&fit=crop",
+      "type": "casual"
+    }
+  ],
+  "default_gradient": {
+    "tournament_t1": "linear-gradient(135deg, #FF006E 0%, #9747FF 50%, #00FFE5 100%)",
+    "tournament_t2": "linear-gradient(135deg, #00FFE5 0%, #4F46E5 50%, #FF006E 100%)",
+    "scrim": "linear-gradient(135deg, #6366F1 0%, #9747FF 100%)",
+    "featured": "linear-gradient(135deg, #FF006E 0%, #FF0080 50%, #FF006E 100%)"
+  },
+  "fallback_colors": {
+    "primary": "#FF006E",
+    "secondary": "#00FFE5",
+    "accent": "#9747FF",
+    "background": "#0E0B16",
+    "card": "#1A142E"
+  }
+}
+

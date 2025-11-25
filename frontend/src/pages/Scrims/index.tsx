@@ -184,11 +184,12 @@ export default function Scrims() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 group/scrims">
         {filteredScrims.map((scrim: any) => (
           <div
             key={scrim._id}
-            className="bg-card p-6 rounded-lg border border-border hover:border-primary/50 transition-all hover:shadow-lg"
+            className="bg-card p-6 rounded-lg border border-primary/20 hover:border-primary transition-all group/card
+                       group-has-[.group\/card:hover]/scrims:opacity-40 hover:!opacity-100"
           >
             {/* Organizer */}
             <div className="flex items-start justify-between mb-3">
@@ -354,6 +355,8 @@ export default function Scrims() {
                 <span className={`inline-block px-3 py-1 rounded text-xs font-semibold ${
                   scrim.status === 'open' 
                     ? 'bg-green-500/10 text-green-500'
+                    : scrim.status === 'pending'
+                    ? 'bg-[#FFB800] text-black'
                     : scrim.status === 'ongoing'
                     ? 'bg-yellow-500/10 text-yellow-500'
                     : scrim.status === 'full'
@@ -361,6 +364,7 @@ export default function Scrims() {
                     : 'bg-gray-500/10 text-gray-400'
                 }`}>
                   {scrim.status === 'open' ? '🔓 Open' : 
+                   scrim.status === 'pending' ? '⏳ Pending' :
                    scrim.status === 'full' ? '🔒 Full' :
                    scrim.status === 'ongoing' ? '▶️ Ongoing' :
                    scrim.status}

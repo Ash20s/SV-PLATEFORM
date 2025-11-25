@@ -48,6 +48,10 @@ const tournamentSchema = new Schema({
   numberOfGames: { type: Number, default: 6 },  // Total games/lobbies in tournament
   prizePool: Number,
   
+  // Visual assets
+  bannerImage: { type: String, default: '' }, // URL de l'image de fond
+  thumbnail: { type: String, default: '' }, // URL de la miniature
+  
   // Prize distribution (percentage for each placement)
   prizeDistribution: [{
     placement: Number,  // 1st, 2nd, 3rd, etc.

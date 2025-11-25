@@ -45,14 +45,14 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Barlow', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        'glow-sm': '0 0 10px rgba(0, 255, 198, 0.2)',
-        'glow-md': '0 0 20px rgba(0, 255, 198, 0.3)',
-        'glow-lg': '0 0 30px rgba(0, 255, 198, 0.4)',
-        'glow-accent': '0 0 20px rgba(25, 249, 169, 0.3)',
-        'card': '0 4px 20px rgba(0, 0, 0, 0.3)',
+        'glow-sm': '0 0 10px hsla(340, 100%, 50%, 0.2)',
+        'glow-md': '0 0 20px hsla(340, 100%, 50%, 0.3)',
+        'glow-lg': '0 0 30px hsla(340, 100%, 50%, 0.4)',
+        'glow-accent': '0 0 20px hsla(340, 100%, 50%, 0.3)',
+        'card': '0 4px 20px rgba(0, 0, 0, 0.5)',
       },
       keyframes: {
         'accordion-down': {
@@ -64,8 +64,8 @@ export default {
           to: { height: '0' },
         },
         'glow-pulse': {
-          '0%, 100%': { boxShadow: '0 0 10px rgba(0, 255, 198, 0.2)' },
-          '50%': { boxShadow: '0 0 20px rgba(0, 255, 198, 0.4)' },
+          '0%, 100%': { boxShadow: '0 0 10px hsla(340, 100%, 50%, 0.2)' },
+          '50%': { boxShadow: '0 0 20px hsla(340, 100%, 50%, 0.4)' },
         },
         'fade-in': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },

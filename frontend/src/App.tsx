@@ -10,6 +10,8 @@ import Tournaments from './pages/Tournaments';
 import TournamentDetails from './pages/TournamentDetails';
 import TournamentGroups from './pages/TournamentGroups';
 import Stats from './pages/Stats';
+import Calendar from './pages/Calendar';
+import Leaderboard from './pages/Leaderboard';
 import Mercato from './pages/Mercato';
 import Profile from './pages/Profile';
 import ProfilePage from './pages/ProfilePage';
@@ -38,6 +40,8 @@ function App() {
             } />
             <Route path="/tournaments/:id/groups" element={<TournamentGroups />} />
             <Route path="/stats" element={<Stats />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/mercato" element={<Mercato />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-profile" element={<ProfilePage />} />

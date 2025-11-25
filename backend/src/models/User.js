@@ -20,6 +20,17 @@ const userSchema = new Schema({
       youtube: String,
     },
   },
+  // Twitch OAuth integration
+  twitchAuth: {
+    twitchId: { type: String, unique: true, sparse: true },
+    twitchUsername: String,
+    twitchDisplayName: String,
+    accessToken: String,
+    refreshToken: String,
+    tokenExpiresAt: Date,
+    isStreaming: { type: Boolean, default: false },
+    lastStreamCheck: Date,
+  },
   stats: {
     matchesPlayed: { type: Number, default: 0 },
     wins: { type: Number, default: 0 },

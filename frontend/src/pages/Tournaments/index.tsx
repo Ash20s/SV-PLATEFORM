@@ -133,7 +133,7 @@ export default function Tournaments() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 group/tournaments">
         {filteredTournaments.map((tournament: any) => {
           const isRegistered = isTournamentRegistered(tournament);
           const canRegister = isAuthenticated && 
@@ -145,7 +145,8 @@ export default function Tournaments() {
           return (
             <div
               key={tournament._id}
-              className="bg-card p-6 rounded-lg border border-border hover:border-yellow-500/50 transition-all hover:shadow-lg"
+              className="bg-card p-6 rounded-lg border border-primary/20 hover:border-primary transition-all group/card
+                         group-has-[.group\/card:hover]/tournaments:opacity-40 hover:!opacity-100"
             >
               <Link to={`/tournaments/${tournament._id}`} className="block">
                 <div className="flex items-start justify-between mb-3">
@@ -184,8 +185,8 @@ export default function Tournaments() {
                   )}
 
                   {tournament.prizePool && (
-                    <div className="text-primary font-bold">
-                      💰 {tournament.prizePool}€
+                    <div className="bg-[#FFBE0B] text-black px-3 py-1 rounded font-bold text-sm inline-block">
+                      ${tournament.prizePool}
                     </div>
                   )}
                 </div>
@@ -194,6 +195,8 @@ export default function Tournaments() {
                   <span className={`inline-block px-3 py-1 rounded text-xs font-semibold ${
                     tournament.status === 'registration' 
                       ? 'bg-green-500/10 text-green-500'
+                      : tournament.status === 'pending'
+                      ? 'bg-[#FFB800] text-black'
                       : tournament.status === 'ongoing'
                       ? 'bg-yellow-500/10 text-yellow-500'
                       : tournament.status === 'locked'
@@ -201,6 +204,7 @@ export default function Tournaments() {
                       : 'bg-gray-500/10 text-gray-400'
                   }`}>
                     {tournament.status === 'registration' ? '🔓 Open' : 
+                     tournament.status === 'pending' ? '⏳ Pending' :
                      tournament.status === 'locked' ? '🔒 Locked' :
                      tournament.status === 'ongoing' ? '▶️ Ongoing' :
                      tournament.status}

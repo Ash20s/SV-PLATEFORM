@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Bell, Shield, User, Lock, Trash2, Mail, Eye, EyeOff, Palette } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useI18n } from '@/i18n/i18n';
 import api from '@/services/api';
+import { twitchService } from '@/services/twitchService';
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
@@ -22,6 +23,34 @@ export default function SettingsPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [twitchLinking, setTwitchLinking] = useState(false);
+
+  // Check for Twitch OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const twitchParam = urlParams.get('twitch');
+    
+    if (code && twitchParam === 'callback') {
+      handleTwitchCallback(code);
+    }
+  }, []);
+
+  const handleTwitchCallback = async (code: string) => {
+    setTwitchLinking(true);
+    try {
+      await twitchService.handleCallback(code);
+      queryClient.invalidateQueries({ queryKey: ['user-settings'] });
+      // Clean URL
+      window.history.replaceState({}, document.title, '/settings');
+      alert('Twitch account linked successfully!');
+    } catch (error: any) {
+      console.error('Twitch callback error:', error);
+      alert(error?.response?.data?.message || 'Failed to link Twitch account');
+    } finally {
+      setTwitchLinking(false);
+    }
+  };
 
   // Récupérer les préférences utilisateur
   const { data: userData, isLoading } = useQuery({
@@ -31,6 +60,33 @@ export default function SettingsPage() {
       return response.data.user;
     },
     enabled: !!user?.id,
+    refetchOnMount: true,
+  });
+
+  // Link Twitch account
+  const linkTwitchMutation = useMutation({
+    mutationFn: async () => {
+      await twitchService.openAuthPopup();
+    },
+    onError: (error: any) => {
+      console.error('Error linking Twitch:', error);
+      alert('Failed to open Twitch authentication');
+    },
+  });
+
+  // Unlink Twitch account
+  const unlinkTwitchMutation = useMutation({
+    mutationFn: async () => {
+      return await twitchService.unlinkAccount();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-settings'] });
+      alert('Twitch account unlinked successfully!');
+    },
+    onError: (error: any) => {
+      console.error('Error unlinking Twitch:', error);
+      alert(error?.response?.data?.message || 'Failed to unlink Twitch account');
+    },
   });
 
   // Mettre à jour l'apparence (thème et langue)
@@ -523,6 +579,59 @@ export default function SettingsPage() {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">{t('settings.coming.soon')}</p>
+            </div>
+
+            {/* Twitch Integration */}
+            <div className="p-4 rounded-lg border border-border bg-purple-500/5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold flex items-center gap-2">
+                      Twitch Integration
+                      {userData?.twitchAuth?.twitchId && (
+                        <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded border border-green-500">
+                          Connected
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {userData?.twitchAuth?.twitchId 
+                        ? `Connected as ${userData.twitchAuth.twitchDisplayName || userData.twitchAuth.twitchUsername}`
+                        : 'Link your Twitch account to appear in live streams carousel'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {userData?.twitchAuth?.twitchId ? (
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to unlink your Twitch account?')) {
+                      unlinkTwitchMutation.mutate();
+                    }
+                  }}
+                  disabled={unlinkTwitchMutation.isPending}
+                  className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                >
+                  {unlinkTwitchMutation.isPending ? 'Unlinking...' : 'Unlink Twitch Account'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => linkTwitchMutation.mutate()}
+                  disabled={linkTwitchMutation.isPending || twitchLinking}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                  </svg>
+                  {twitchLinking ? 'Linking...' : 'Connect Twitch Account'}
+                </button>
+              )}
             </div>
           </div>
         </div>

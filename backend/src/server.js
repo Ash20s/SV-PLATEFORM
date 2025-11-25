@@ -24,10 +24,14 @@ connectDB().then(() => {
 });
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors({ 
+  origin: process.env.CLIENT_URL || 'http://localhost:5173', 
+  credentials: true 
+}));
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(rateLimiter);
+// Rate limiter temporairement désactivé pour développement
+// app.use(rateLimiter);
 
 // Servir les fichiers statiques uploadés avec CORS
 app.use('/uploads', (req, res, next) => {
@@ -52,13 +56,17 @@ app.use('/api/scrims', require('./routes/scrims.routes'));
 app.use('/api/tournaments', require('./routes/tournaments.routes'));
 app.use('/api/stats', require('./routes/stats.routes'));
 app.use('/api/announcements', require('./routes/announcements.routes'));
-app.use('/api/listings', require('./routes/listings.routes'));
+app.use('/api/listings', require('./routes/listing.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/profile', require('./routes/profile.routes'));
 app.use('/api/posts', require('./routes/post.routes'));
 app.use('/api/matches', require('./routes/matches.routes'));
 app.use('/api/mock', require('./routes/mock.routes'));
 app.use('/api/guest-invites', require('./routes/guestInvites.routes'));
+app.use('/api/twitch', require('./routes/twitch.routes'));
+app.use('/api/mock-twitch', require('./routes/mock-twitch.routes'));
+app.use('/api/leaderboard', require('./routes/leaderboard.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 
 app.use(errorHandler);
 

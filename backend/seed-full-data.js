@@ -10,7 +10,7 @@ const Listing = require('./src/models/Listing');
 const Announcement = require('./src/models/Announcement');
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/supervise', {
+mongoose.connect('mongodb://localhost:27017/supervive-platform', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });

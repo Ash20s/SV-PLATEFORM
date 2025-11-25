@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Shield, Users, Flag, MessageSquare, BarChart3, 
-  Settings, AlertTriangle, CheckCircle, XCircle, Ban, UserCog, Plus, X
+  Settings, AlertTriangle, CheckCircle, XCircle, Ban, UserCog, Plus, X, Trophy
 } from 'lucide-react';
 import { useI18n } from '@/i18n/i18n';
+import MMRManagement from './MMRManagement';
 
-type AdminTab = 'overview' | 'reports' | 'users' | 'content' | 'settings';
+type AdminTab = 'overview' | 'reports' | 'users' | 'content' | 'settings' | 'mmr';
 
 interface Report {
   _id: string;
@@ -63,6 +64,7 @@ export default function Admin() {
     { id: 'reports' as AdminTab, label: t('admin.reports'), icon: Flag },
     { id: 'users' as AdminTab, label: t('admin.users'), icon: Users },
     { id: 'content' as AdminTab, label: t('admin.content'), icon: MessageSquare },
+    { id: 'mmr' as AdminTab, label: 'MMR Management', icon: Trophy },
     { id: 'settings' as AdminTab, label: t('admin.settings'), icon: Settings },
   ];
 
@@ -108,6 +110,7 @@ export default function Admin() {
         {activeTab === 'reports' && <ReportsSection />}
         {activeTab === 'users' && <UsersSection />}
         {activeTab === 'content' && <ContentSection />}
+        {activeTab === 'mmr' && <MMRManagement />}
         {activeTab === 'settings' && <SettingsSection />}
       </div>
     </div>

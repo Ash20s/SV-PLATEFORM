@@ -36,6 +36,9 @@ const scrimSchema = new Schema({
   numberOfGames: { type: Number, default: 1 },  // How many BR games/lobbies
   maxTeams: { type: Number, default: 10 },  // Maximum teams per lobby/game (12 for Trio, 10 for Squad)
   
+  // Visual assets
+  bannerImage: { type: String, default: '' }, // URL de l'image de fond
+  
   // Results (one per game)
   games: [{
     gameNumber: Number,

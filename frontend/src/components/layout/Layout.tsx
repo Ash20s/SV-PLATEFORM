@@ -1,5 +1,5 @@
 import { ReactNode, useState, useEffect } from 'react';
-import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 import Footer from './Footer';
 import SimpleAnimatedBackground from '../SimpleAnimatedBackground';
 import VideoBackground from '../VideoBackground';
@@ -57,39 +57,11 @@ export default function Layout({ children }: LayoutProps) {
   const [useVideoBackground] = useState(true);
   
   return (
-    <div className={`min-h-screen flex flex-col bg-background relative ${theme}`}>
-      {/* ============================================ */}
-      {/* BACKGROUNDS - Choisissez votre option       */}
-      {/* ============================================ */}
+    <div className={`min-h-screen flex flex-col relative ${theme}`}>
+      {/* Background gradient is applied in index.css body */}
       
-      {useVideoBackground ? (
-        // ============================================
-        // OPTION VIDÉO : Placez vos .webm dans /public/videos/
-        // ============================================
-        <VideoBackground 
-          videoUrl="/videos/02 SV_CT_Background.webm"   // Votre fichier vidéo
-          fallbackImage="/images/thumb-gameplay.jpg"    // Image si vidéo ne charge pas
-          opacity={0.3}                                  // Opacité vidéo (0.2-0.5)
-          blur={0}                                       // Flou en pixels (0-10)
-          overlay={true}                                 // Overlay sombre pour lisibilité
-          overlayOpacity={0.75}                          // Opacité de l'overlay (0.5-0.9)
-        />
-        
-        // OU utilisez le sélecteur multi-vidéos :
-        // <DynamicVideoBackground 
-        //   opacity={0.3}
-        //   blur={0}
-        //   showSelector={true}  // Sélecteur en bas à droite
-        // />
-      ) : (
-        // ============================================
-        // OPTION CSS : Background animé (orbes gradient)
-        // ============================================
-        <SimpleAnimatedBackground />
-      )}
-      
-      <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-8 relative z-10">{children}</main>
+      <Sidebar />
+      <main className="flex-1 ml-20 px-8 py-8 relative z-10">{children}</main>
       <Footer />
     </div>
   );

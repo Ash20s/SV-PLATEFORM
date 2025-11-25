@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Calendar, Trophy, Swords, TrendingUp, Users } from 'lucide-react';
+import { Calendar, Trophy, Megaphone, Search, Users, Swords } from 'lucide-react';
 import { useState } from 'react';
 import EventCalendar, { type CalendarEvent } from '@/components/EventCalendar';
 import EventDetailsModal from '@/components/EventDetailsModal';
+import TwitchStreamsCarousel from '@/components/TwitchStreamsCarousel';
 import { useI18n } from '@/i18n/i18n';
 
 export default function Home() {
   const { t } = useI18n();
   const [selectedEvent, setSelectedEvent] = useState<{ type: 'tournament' | 'scrim'; data: any } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: upcomingTournaments } = useQuery({
     queryKey: ['tournaments', 'upcoming'],
@@ -84,217 +86,270 @@ export default function Home() {
   });
 
 
+  // Get featured tournament (first open tournament)
+  const featuredTournament = upcomingTournaments?.tournaments?.[0];
+
   return (
     <div className="space-y-8">
-      <section className="text-center py-20 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg">
-        <h1 className="text-5xl font-bold mb-4">{t('home.title')}</h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          {t('home.subtitle')}
-        </p>
-        <div className="flex gap-4 justify-center flex-wrap">
-          <Link 
-            to="/teams" 
-            className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-          >
-            {t('home.explore.teams')}
-          </Link>
-          <Link 
-            to="/tournaments" 
-            className="bg-secondary text-secondary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-secondary/90 transition-colors"
-          >
-            {t('home.view.tournaments')}
-          </Link>
+      {/* Hero Section with Search - CENTERED */}
+      <section className="text-center py-8 max-w-3xl mx-auto">
+        <div className="mb-8">
+          <p className="text-primary text-sm font-bold mb-2 uppercase tracking-widest">HUB CENTRALE</p>
+          <h1 className="text-5xl font-bold">
+            PROJECT <span className="text-primary">SUPERVIVE</span>
+          </h1>
+        </div>
+        
+        {/* Search Bar - CENTERED */}
+        <div className="max-w-lg mx-auto">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search a player, a team or a hunter..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 bg-card/50 border border-primary/30 rounded focus:outline-none focus:border-primary transition-colors text-foreground placeholder:text-muted-foreground text-sm text-center"
+            />
+          </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <Users className="text-primary" size={24} />
-            <h3 className="font-semibold">{t('home.stats.teams')}</h3>
+      {/* MAIN HUB Section */}
+      <section className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Featured Tournament - LEFT (2 cols) */}
+          <div className="lg:col-span-2 lg:row-span-2 bg-[hsla(0,0%,0%,0.54)] border border-border/10 clip-corner overflow-hidden hover:border-border/20 transition-all">
+            {featuredTournament ? (
+              <Link 
+                to={`/tournaments/${featuredTournament._id}`}
+                className="block group"
+              >
+                {/* Image en haut */}
+                <div className="relative overflow-hidden">
+                  {featuredTournament.bannerImage ? (
+                    <img 
+                      src={featuredTournament.bannerImage} 
+                      alt={featuredTournament.name}
+                      className="w-full h-[250px] object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-[250px] bg-gradient-to-br from-primary/30 to-primary/10" />
+                  )}
+                </div>
+                
+                {/* Contenu */}
+                <div className="p-6">
+                  <p className="text-[#FFBE0B] text-xs font-bold mb-2 uppercase tracking-widest">UPCOMING EVENT</p>
+                  <h3 className="text-2xl font-bold mb-3 text-white">
+                    {featuredTournament.name}
+                  </h3>
+                  <p className="text-[#FFBE0B] text-sm font-semibold mb-6">
+                    {featuredTournament.prizePool && `$${featuredTournament.prizePool} •`} {featuredTournament.region || 'Global'} • {featuredTournament.format || 'Squads'}
+                  </p>
+                  
+                  <button className="bg-primary text-white px-8 py-3 rounded font-bold hover:bg-primary/90 transition-colors w-full text-sm uppercase tracking-wider">
+                    REGISTER NOW
+                  </button>
+                </div>
+              </Link>
+            ) : (
+              <div className="relative p-8 h-full flex items-center justify-center min-h-[300px]">
+                <p className="text-muted-foreground">No featured tournament available</p>
+              </div>
+            )}
           </div>
-          <p className="text-3xl font-bold">—</p>
-          <p className="text-sm text-muted-foreground">{t('home.stats.active.teams')}</p>
-        </div>
 
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <Trophy className="text-yellow-500" size={24} />
-            <h3 className="font-semibold">{t('home.stats.tournaments')}</h3>
+          {/* Calendar Preview - TOP RIGHT */}
+          <div className="bg-[hsla(0,0%,0%,0.54)] border border-border/10 clip-corner p-5 hover:border-border/20 transition-all h-fit">
+            <div className="flex items-center gap-2 mb-4">
+              <Calendar className="text-primary" size={20} />
+              <h3 className="text-lg font-bold uppercase">Calendar</h3>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              {calendarEvents.slice(0, 2).map((event) => (
+                <div 
+                  key={event.id}
+                  className="bg-card/20 border border-border/10 rounded p-2.5 hover:border-border/20 transition-all"
+                >
+                  <p className="font-semibold text-xs mb-1 truncate">{event.title}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Today, {new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    </p>
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                      event.subtitle === 'TIER 1' || event.subtitle === 'Tier 1'
+                        ? 'bg-cyan-500/80 text-black' 
+                        : event.type === 'tournament'
+                        ? 'bg-cyan-500/60 text-black'
+                        : 'bg-cyan-500/40 text-black'
+                    }`}>
+                      {(event.subtitle === 'TIER 1' || event.subtitle === 'Tier 1') ? 'T1' : (event.type === 'tournament' ? 'T1' : 'OPEN')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              
+              {calendarEvents.length === 0 && (
+                <p className="text-muted-foreground text-xs py-8 text-center">
+                  No upcoming events
+                </p>
+              )}
+            </div>
+
+            <Link 
+              to="/calendar" 
+              className="block w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded text-center transition-colors text-xs uppercase tracking-wider"
+            >
+              View Calendar
+            </Link>
           </div>
-          <p className="text-3xl font-bold">{upcomingTournaments?.tournaments?.length || 0}</p>
-          <p className="text-sm text-muted-foreground">{t('home.stats.upcoming')}</p>
-        </div>
 
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <Swords className="text-blue-500" size={24} />
-            <h3 className="font-semibold">{t('home.stats.scrims')}</h3>
+          {/* Scrims Preview - BOTTOM RIGHT */}
+          <div className="bg-[hsla(0,0%,0%,0.54)] border border-border/10 clip-corner p-5 hover:border-border/20 transition-all h-fit">
+            <div className="flex items-center gap-2 mb-4">
+              <Swords className="text-primary" size={20} />
+              <h3 className="text-lg font-bold uppercase">Scrims</h3>
+            </div>
+            
+            <div className="space-y-2 mb-4">
+              {upcomingScrims?.scrims?.slice(0, 2).map((scrim: any) => (
+                <Link 
+                  key={scrim._id}
+                  to="/scrims"
+                  className="block bg-card/20 border border-border/10 rounded p-2.5 hover:border-border/20 transition-all"
+                >
+                  <p className="font-semibold text-xs mb-1 truncate">
+                    Scrim - {scrim.organizer?.username || 'Unknown'}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(scrim.date).toLocaleDateString()}
+                    </p>
+                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-cyan-500/60 text-black">
+                      {scrim.tier || 'OPEN'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+              
+              {(!upcomingScrims?.scrims || upcomingScrims.scrims.length === 0) && (
+                <p className="text-muted-foreground text-xs py-8 text-center">
+                  No upcoming scrims
+                </p>
+              )}
+            </div>
+
+            <Link 
+              to="/scrims" 
+              className="block w-full bg-primary/80 hover:bg-primary text-white font-bold py-2.5 rounded text-center transition-colors text-xs uppercase tracking-wider"
+            >
+              View Scrims
+            </Link>
           </div>
-          <p className="text-3xl font-bold">{upcomingScrims?.scrims?.length || 0}</p>
-          <p className="text-sm text-muted-foreground">{t('home.stats.scheduled')}</p>
         </div>
+      </section>
 
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="text-green-500" size={24} />
-            <h3 className="font-semibold">{t('home.stats.activity')}</h3>
+      {/* Latest Announcements */}
+      <section className="bg-card border border-border rounded-lg p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-primary/10 p-2 rounded">
+            <Megaphone className="text-primary" size={24} />
           </div>
-          <p className="text-3xl font-bold">High</p>
-          <p className="text-sm text-muted-foreground">{t('home.stats.community.engagement')}</p>
+          <h2 className="text-2xl font-bold italic">Latest Annoucements</h2>
         </div>
-      </div>
-
-      <section className="bg-card p-6 rounded-lg border border-border">
-        <h2 className="text-2xl font-bold mb-4">{t('home.announcements')}</h2>
         <div className="space-y-4">
           {announcements?.announcements?.map((announcement: any) => (
             <div key={announcement._id} className="border-b border-border pb-4 last:border-0">
-              <h3 className="font-semibold mb-2">{announcement.title}</h3>
-              <p className="text-muted-foreground text-sm">{announcement.content}</p>
-              <p className="text-xs text-muted-foreground mt-2">
-                {new Date(announcement.createdAt).toLocaleDateString()}
-              </p>
+              <div className="flex items-start gap-4">
+                <div className="bg-[#00D4FF] text-black px-3 py-1 rounded text-xs font-bold shrink-0 mt-0.5">
+                  {new Date(announcement.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">{announcement.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-2">{announcement.content}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(announcement.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
             </div>
           ))}
           {(!announcements?.announcements || announcements.announcements.length === 0) && (
-            <p className="text-muted-foreground">{t('home.announcements.none')}</p>
+            <p className="text-muted-foreground text-center py-4">{t('home.announcements.none')}</p>
           )}
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Trophy size={24} className="text-yellow-500" />
-              <h2 className="text-2xl font-bold">{t('home.upcoming.tournaments')}</h2>
-            </div>
-            <Link to="/tournaments" className="text-primary hover:underline">
-              {t('home.view.all')} →
-            </Link>
+      {/* Upcoming Tournaments - Two Columns */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Trophy className="text-yellow-500" size={24} />
+            <h2 className="text-2xl font-bold">Upcomming Tournaments</h2>
           </div>
-          <div className="space-y-3">
-            {upcomingTournaments?.tournaments?.map((tournament: any) => (
-              <div 
-                key={tournament._id} 
-                className="bg-card p-4 rounded-lg border border-border hover:border-yellow-500/50 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{tournament.name}</h3>
-                    {tournament.tier && (
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        tournament.tier === 'Tier 1' 
-                          ? 'bg-purple-500/10 text-purple-500' 
-                          : tournament.tier === 'Tier 2'
-                          ? 'bg-blue-500/10 text-blue-500'
-                          : 'bg-gray-500/10 text-gray-400'
-                      }`}>
-                        {tournament.tier}
-                      </span>
-                    )}
+          <Link 
+            to="/tournaments" 
+            className="bg-[#00FFE5] text-black px-4 py-2 rounded font-bold text-sm hover:opacity-90 transition-all"
+          >
+            View all →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {upcomingTournaments?.tournaments?.slice(0, 6).map((tournament: any) => (
+            <Link 
+              key={tournament._id}
+              to={`/tournaments/${tournament._id}`}
+              className="bg-[hsla(0,0%,0%,0.54)] border border-primary/20 clip-corner-sm p-4 hover:border-primary/50 transition-all group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm mb-1 group-hover:text-primary transition-colors truncate">
+                    {tournament.name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar size={12} />
+                    <span>{new Date(tournament.startDate).toLocaleDateString()}</span>
                   </div>
-                  <span className="bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-xs font-semibold">
-                    {tournament.status}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <Users size={14} className="text-muted-foreground" />
+                  <span className="font-semibold">
+                    {tournament.registeredTeams?.length || 0}/{tournament.maxTeams || 12}
                   </span>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    {new Date(tournament.startDate).toLocaleDateString()}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users size={14} />
-                    {tournament.registeredTeams?.length || 0} {t('home.teams')}
-                  </span>
-                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className={`px-2.5 py-1 rounded text-xs font-bold ${
+                  tournament.status === 'open' 
+                    ? 'bg-green-500 text-white' 
+                    : tournament.status === 'pending'
+                    ? 'bg-[#FFB800] text-black'
+                    : 'bg-gray-500 text-white'
+                }`}>
+                  {tournament.status?.toUpperCase()}
+                </span>
                 {tournament.prizePool && (
-                  <p className="text-primary font-semibold mt-2">
-                    Prize: {tournament.prizePool}€
-                  </p>
+                  <span className="bg-[#FFBE0B] text-black px-2.5 py-1 rounded font-bold text-xs">
+                    ${tournament.prizePool}
+                  </span>
                 )}
               </div>
-            ))}
-            {(!upcomingTournaments?.tournaments || upcomingTournaments.tournaments.length === 0) && (
-              <p className="text-muted-foreground text-center py-8">{t('home.upcoming.tournaments.none')}</p>
-            )}
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Swords size={24} className="text-blue-500" />
-              <h2 className="text-2xl font-bold">{t('home.upcoming.scrims')}</h2>
-            </div>
-            <Link to="/scrims" className="text-primary hover:underline">
-              {t('home.view.all')} →
             </Link>
-          </div>
-          <div className="space-y-3">
-            {upcomingScrims?.scrims?.map((scrim: any) => (
-              <div 
-                key={scrim._id} 
-                className="bg-card p-4 rounded-lg border border-border hover:border-blue-500/50 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">
-                      {t('common.organized.by')} {scrim.organizer?.username || t('common.unknown')}
-                    </h3>
-                    {scrim.tier && (
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        scrim.tier === 'Tier 1' 
-                          ? 'bg-purple-500/10 text-purple-500' 
-                          : scrim.tier === 'Tier 2'
-                          ? 'bg-blue-500/10 text-blue-500'
-                          : 'bg-gray-500/10 text-gray-400'
-                      }`}>
-                        {scrim.tier}
-                      </span>
-                    )}
-                  </div>
-                  <span className="bg-blue-500/10 text-blue-500 px-2 py-1 rounded text-xs font-semibold">
-                    {scrim.status}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    {new Date(scrim.date).toLocaleDateString()}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users size={14} />
-                    {scrim.participants?.length || 0}/{scrim.maxTeams} {t('home.teams')}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {(!upcomingScrims?.scrims || upcomingScrims.scrims.length === 0) && (
-              <p className="text-muted-foreground text-center py-8">{t('home.upcoming.scrims.none') || 'No upcoming scrims'}</p>
-            )}
-          </div>
-        </section>
-      </div>
-
-      {/* Calendrier des événements */}
-      <section>
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-            <Calendar className="text-primary" size={32} />
-            {t('home.calendar.title')}
-          </h2>
-          <p className="text-muted-foreground">
-            {t('home.calendar.desc')}
-          </p>
+          ))}
+          
+          {(!upcomingTournaments?.tournaments || upcomingTournaments.tournaments.length === 0) && (
+            <div className="col-span-2 text-center py-12 text-muted-foreground">
+              No upcoming tournaments
+            </div>
+          )}
         </div>
-        <EventCalendar
-          events={calendarEvents}
-          title={t('home.calendar.title')}
-          onEventSelect={handleEventSelect}
-        />
       </section>
+
+      {/* Twitch Streams Carousel */}
+      <TwitchStreamsCarousel />
 
       {/* Modal de détails d'événement */}
       {selectedEvent && (
