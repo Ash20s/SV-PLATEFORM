@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye, Users } from 'lucide-react';
 import { twitchService, TwitchStream } from '@/services/twitchService';
 import { useI18n } from '@/i18n/i18n';
@@ -7,6 +7,11 @@ import { useI18n } from '@/i18n/i18n';
 export default function TwitchStreamsCarousel() {
   const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [hasDragged, setHasDragged] = useState(false);
 
   const { data: streams = [], isLoading } = useQuery({
     queryKey: ['twitch-streams'],
@@ -51,15 +56,69 @@ export default function TwitchStreamsCarousel() {
   const visibleStreams = 3;
   const maxIndex = Math.max(0, streams.length - visibleStreams);
 
+  // Drag to scroll handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setHasDragged(false);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+    scrollContainerRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll speed multiplier
+    
+    // If moved more than 5px, consider it a drag
+    if (Math.abs(walk) > 5) {
+      setHasDragged(true);
+    }
+    
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+    }
+    // Reset hasDragged after a short delay to allow click prevention
+    setTimeout(() => setHasDragged(false), 100);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.style.cursor = 'grab';
+      }
+      setTimeout(() => setHasDragged(false), 100);
+    }
+  };
+
+  // Arrow button handlers with smooth scroll
   const handlePrev = () => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
+    if (!scrollContainerRef.current) return;
+    const cardWidth = scrollContainerRef.current.offsetWidth / 3; // Width of one card
+    scrollContainerRef.current.scrollBy({
+      left: -cardWidth - 16, // Card width + gap
+      behavior: 'smooth'
+    });
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1));
+    if (!scrollContainerRef.current) return;
+    const cardWidth = scrollContainerRef.current.offsetWidth / 3;
+    scrollContainerRef.current.scrollBy({
+      left: cardWidth + 16,
+      behavior: 'smooth'
+    });
   };
 
-  const displayedStreams = streams.slice(currentIndex, currentIndex + visibleStreams);
+  const displayedStreams = streams;
 
   const formatViewerCount = (count: number) => {
     if (count >= 1000) {
@@ -102,29 +161,47 @@ export default function TwitchStreamsCarousel() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {streams.length === 0 ? (
-          // Message quand aucun stream
-          <div className="col-span-3 bg-card rounded-lg border border-border p-12 text-center">
-            <div className="mb-4">
-              <span className="text-6xl">📺</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2">No Live Streams Right Now</h3>
-            <p className="text-muted-foreground mb-4">
-              When community members go live on Twitch, their streams will appear here!
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Want to be featured? Link your Twitch account in <a href="/settings" className="text-primary hover:underline">Settings</a>
-            </p>
+      {streams.length === 0 ? (
+        // Message quand aucun stream
+        <div className="bg-card rounded-lg border border-border p-12 text-center">
+          <div className="mb-4">
+            <span className="text-6xl">📺</span>
           </div>
-        ) : (
-          displayedStreams.map((stream) => (
+          <h3 className="text-xl font-bold mb-2">No Live Streams Right Now</h3>
+          <p className="text-muted-foreground mb-4">
+            When community members go live on Twitch, their streams will appear here!
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Want to be featured? Link your Twitch account in <a href="/settings" className="text-primary hover:underline">Settings</a>
+          </p>
+        </div>
+      ) : (
+        <div
+          ref={scrollContainerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          className="flex gap-4 overflow-x-auto scrollbar-hide cursor-grab select-none scroll-smooth"
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {displayedStreams.map((stream) => (
           <a
             key={stream.userId}
             href={`https://twitch.tv/${stream.userName}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group bg-card rounded-lg overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:scale-[1.02]"
+            className="group bg-card rounded-lg overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:scale-[1.02] flex-shrink-0 w-full md:w-[calc(33.333%-0.66rem)]"
+            onDragStart={(e) => e.preventDefault()}
+            onClick={(e) => {
+              if (hasDragged) {
+                e.preventDefault();
+              }
+            }}
           >
             {/* Thumbnail with LIVE badge */}
             <div className="relative aspect-video overflow-hidden bg-black">
@@ -187,13 +264,14 @@ export default function TwitchStreamsCarousel() {
               </div>
             </div>
           </a>
-        )))}
-      </div>
+        ))}
+        </div>
+      )}
 
       {streams.length > visibleStreams && (
         <div className="text-center mt-4">
           <p className="text-sm text-muted-foreground">
-            Showing {currentIndex + 1}-{Math.min(currentIndex + visibleStreams, streams.length)} of {streams.length} live streams
+            {streams.length} live streams • Drag to scroll or use arrows
           </p>
         </div>
       )}
